@@ -48,6 +48,9 @@ def compile_images(in_PATH, out_PATH):
 # Masks and preprocesses an (m, IMAGE_SZ, IMAGE_SZ, 3) batch of images for image outpainting.
 # Returns: numpy array of size (m, IMAGE_SZ, IMAGE_SZ, 4)
 def preprocess_images_outpainting(imgs, crop=True):
+
+    raise Exception('NJ: Method needs to be rewritten!')
+
     m = imgs.shape[0]
     imgs = np.array(imgs, copy=True)
     pix_avg = np.mean(imgs, axis=(1, 2, 3))
@@ -61,6 +64,9 @@ def preprocess_images_outpainting(imgs, crop=True):
 # Expands and preprocesses a single (h, w, 3) image for image outpainting.
 # Returns: numpy array of size (h, w + 2 * dw, 4)
 def preprocess_images_gen(img):
+
+    raise Exception('NJ: Method needs to be rewritten!')
+
     img = np.array(img, copy=True)
     pix_avg = np.mean(img)
     dw = int(2 * IMAGE_SZ / 8) # Amount that will be outpainted on each side
@@ -130,6 +136,9 @@ def plot_loss2(loss_filename, title, out_filename):
 
 # Use seamless cloning to improve the generator's output.
 def postprocess_images_outpainting(img_PATH, img_o_PATH, out_PATH, blend=False): # img, img_0 are (64, 64, 3), mask is (64, 64, 1)
+
+    raise Exception('NJ: Method needs to be rewritten!')
+
     src = cv2.imread(img_PATH)[:, int(2 * IMAGE_SZ / 8):-int(2 * IMAGE_SZ / 8), :]
     dst = cv2.imread(img_o_PATH)
     if blend:
@@ -143,6 +152,9 @@ def postprocess_images_outpainting(img_PATH, img_o_PATH, out_PATH, blend=False):
 
 # Use seamless cloning to improve the generator's output.
 def postprocess_images_gen(img, img_o, blend=False):
+
+    raise Exception('NJ: Method needs to be rewritten!')
+
     src = img[:, :, ::-1].copy()
     dst = img_o[:, :, ::-1].copy()
     if blend:
@@ -264,6 +276,9 @@ def create_GIF(in_PATH, prefix, out_PATH):
 
 # Compute the RMSE between a ground truth and outpainted image.
 def compute_RMSE(image_gt_PATH, image_o_PATH):
+
+    raise Exception('NJ: Method needs to be rewritten!')
+
     im_gt = np.array(Image.open(image_gt_PATH).convert('RGB')).astype(np.float64)
     im_o = np.array(Image.open(image_o_PATH).convert('RGB')).astype(np.float64)
     assert im_gt.shape == (128, 128, 3)
