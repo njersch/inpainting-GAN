@@ -9,8 +9,9 @@ output*
 loss_out
 crash*
 *~
-places
+src/raw
+src/places
+src/places_resized
 ~$*
 *.xcf
 temp
-src/raw
