@@ -64,13 +64,16 @@ if len(sys.argv) >= 2:
 G_Z = tf.placeholder(tf.float32, shape=[None, IMAGE_SZ, IMAGE_SZ, 4], name='G_Z')
 DG_X = tf.placeholder(tf.float32, shape=[None, IMAGE_SZ, IMAGE_SZ, 3], name='DG_X')
 
+# Create mask
+mask = util.create_mask()
+
 # Load Places365 data
 data = np.load('places/places_128.npz')
 imgs = data['imgs_train'] # Originally from http://data.csail.mit.edu/places/places365/val_256.tar
-imgs_p = util.preprocess_images_outpainting(imgs)
+imgs_p = util.preprocess_images_outpainting(imgs, mask=mask)
 
 test_imgs = data['imgs_test']
-test_imgs_p = util.preprocess_images_outpainting(test_imgs)
+test_imgs_p = util.preprocess_images_outpainting(test_imgs, mask=mask)
 
 test_img = test_imgs[:N_TEST]
 test_img_p = test_imgs_p[:N_TEST]
@@ -195,5 +198,4 @@ np.savez(os.path.join(OUT_DIR, 'loss.npz'), train_MSE_loss=np.array(train_MSE_lo
 # Save the final blended output, and make a graph of the loss.
 util.plot_loss(os.path.join(OUT_DIR, 'loss.npz'), 'MSE Loss During Training', os.path.join(OUT_DIR, 'loss_plot.png'))
 for i_test in range(N_TEST):
-    util.postprocess_images_outpainting(os.path.join(OUT_DIR, 'test_img_%d.png' % i_test), last_output_PATH[i_test], os.path.join(OUT_DIR, 'out_paste_%d.png' % i_test), blend=False)
-    util.postprocess_images_outpainting(os.path.join(OUT_DIR, 'test_img_%d.png' % i_test), last_output_PATH[i_test], os.path.join(OUT_DIR, 'out_blend_%d.png' % i_test), blend=True)
+    util.postprocess_images_outpainting(os.path.join(OUT_DIR, 'test_img_%d.png' % i_test), last_output_PATH[i_test], os.path.join(OUT_DIR, 'out_paste_%d.png' % i_test), blend=False, mask=mask)

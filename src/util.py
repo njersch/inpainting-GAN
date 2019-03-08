@@ -11,8 +11,29 @@ import cv2
 import os
 import re
 import imageio
+import math
 
-IMAGE_SZ = 128 # Should be a power of 2
+
+IMAGE_SZ = 128  # Should be a power of 2
+
+
+def create_mask(rel_diameter=0.5): # TODO: comment
+
+    # determine hole properties
+    width, height = IMAGE_SZ, IMAGE_SZ
+    radius = rel_diameter * min(width, height) / 2.0
+    center = (width - 1.0) / 2.0, (height - 1.0) / 2.0
+
+    mask = np.full((width, height), False)
+
+    for x in range(width):
+        for y in range(height):
+            # set mask values
+            distance = math.sqrt((x - center[0]) ** 2 + (y - center[1]) ** 2)
+            mask[x, y] = distance <= radius
+
+    return mask
+
 
 # Loads the city image.
 # Returns: normalized numpy array of size (1, IMAGE_SZ, IMAGE_SZ, 3)
@@ -47,18 +68,21 @@ def compile_images(in_PATH, out_PATH):
 
 # Masks and preprocesses an (m, IMAGE_SZ, IMAGE_SZ, 3) batch of images for image outpainting.
 # Returns: numpy array of size (m, IMAGE_SZ, IMAGE_SZ, 4)
-def preprocess_images_outpainting(imgs, crop=True):
+def preprocess_images_outpainting(imgs, mask, fill=True):
 
-    raise Exception('NJ: Method needs to be rewritten!')
+    assert mask.shape == (IMAGE_SZ, IMAGE_SZ)
 
     m = imgs.shape[0]
     imgs = np.array(imgs, copy=True)
-    pix_avg = np.mean(imgs, axis=(1, 2, 3))
-    if crop:
-        imgs[:, :, :int(2 * IMAGE_SZ / 8), :] = imgs[:, :, int(-2 * IMAGE_SZ / 8):, :] = pix_avg[:, np.newaxis, np.newaxis, np.newaxis]
-    mask = np.zeros((m, IMAGE_SZ, IMAGE_SZ, 1))
-    mask[:, :, :int(2 * IMAGE_SZ / 8), :] = mask[:, :, int(-2 * IMAGE_SZ / 8):, :] = 1.0
-    imgs_p = np.concatenate((imgs, mask), axis=3)
+
+    if fill:
+        pix_avg = np.mean(imgs, axis=(1, 2, 3))
+        for i in range(m):
+            imgs[i, mask.astype(bool), :] = pix_avg[i]
+
+    mask_m = np.broadcast_to(mask[np.newaxis, :, :, np.newaxis], (m, IMAGE_SZ, IMAGE_SZ, 1)).astype(int)
+    imgs_p = np.concatenate((imgs, mask_m), axis=3)
+
     return imgs_p
 
 # Expands and preprocesses a single (h, w, 3) image for image outpainting.
@@ -135,19 +159,19 @@ def plot_loss2(loss_filename, title, out_filename):
     plt.clf()
 
 # Use seamless cloning to improve the generator's output.
-def postprocess_images_outpainting(img_PATH, img_o_PATH, out_PATH, blend=False): # img, img_0 are (64, 64, 3), mask is (64, 64, 1)
+def postprocess_images_outpainting(img_PATH, img_i_PATH, out_PATH, mask, blend=False): # img, img_0 are (64, 64, 3), mask is (64, 64, 1)
 
-    raise Exception('NJ: Method needs to be rewritten!')
+    assert mask.shape == (IMAGE_SZ, IMAGE_SZ)
 
-    src = cv2.imread(img_PATH)[:, int(2 * IMAGE_SZ / 8):-int(2 * IMAGE_SZ / 8), :]
-    dst = cv2.imread(img_o_PATH)
+    src = cv2.imread(img_PATH)
+    dst = cv2.imread(img_i_PATH)
     if blend:
-        mask = np.ones(src.shape, src.dtype) * 255
         center = (int(IMAGE_SZ / 2) - 1, int(IMAGE_SZ / 2) - 1)
-        out = cv2.seamlessClone(src, dst, mask, center, cv2.NORMAL_CLONE)
+        out = cv2.seamlessClone(src, dst, mask*255, center, cv2.NORMAL_CLONE)
     else:
         out = dst.copy()
-        out[:, int(2 * IMAGE_SZ / 8):-int(2 * IMAGE_SZ / 8), :] = src
+        inv_mask = np.invert(mask.astype(bool))
+        out[inv_mask, :] = src[inv_mask, :]
     cv2.imwrite(out_PATH, out)
 
 # Use seamless cloning to improve the generator's output.
@@ -157,6 +181,7 @@ def postprocess_images_gen(img, img_o, blend=False):
 
     src = img[:, :, ::-1].copy()
     dst = img_o[:, :, ::-1].copy()
+
     if blend:
         mask = np.ones(src.shape, src.dtype) * 255
         center = (int(dst.shape[1] / 2) - 1, int(dst.shape[0] / 2) - 1)
@@ -247,8 +272,12 @@ def parse_log(in_PATH, out_PATH):
     np.savez(out_PATH, train_MSE_loss=G_MSE_train_sm, dev_MSE_loss=G_MSE_dev_sm, G_loss=G_sm, D_loss=C_sm,
              itrain_MSE_loss=G_MSE_train_ism, idev_MSE_loss=G_MSE_dev_ism, iG_loss=G_ism, iD_loss=C_ism)
 
-# Smoothes the MSE loss in the output loss file to make plotting easier.
+
 def smooth_MSE_loss(loss_file, window_size, outfile):
+    """
+    Smoothes the MSE loss in the output loss file to make plotting easier.
+    """
+
     losses = np.load(loss_file)
     train = losses['train_MSE_loss']
     dev = losses['dev_MSE_loss']
@@ -260,6 +289,7 @@ def smooth_MSE_loss(loss_file, window_size, outfile):
         new_train_list.append([window_avg_val, window_avg])
     np_train = np.array(new_train_list[:-2])
     np.savez(outfile, train_MSE_loss=np_train, dev_MSE_loss=dev)
+
 
 # Create a GIF to enable visualization of generator outputs over the course of training.
 def create_GIF(in_PATH, prefix, out_PATH):
@@ -274,16 +304,20 @@ def create_GIF(in_PATH, prefix, out_PATH):
     images = images[:50] + images[50::10] + [images[-1]]
     imageio.mimwrite(out_PATH, images, loop=1, duration=0.1)
 
-# Compute the RMSE between a ground truth and outpainted image.
-def compute_RMSE(image_gt_PATH, image_o_PATH):
 
-    raise Exception('NJ: Method needs to be rewritten!')
+def compute_RMSE(image_gt_PATH, image_i_PATH, mask):
+    """
+    Compute the RMSE between a ground truth and inpainted image.
+    :param image_gt_PATH: path to ground truth image
+    :param image_i_PATH: path to inpainted image
+    :param mask: binary mask with ones for inpainted pixels
+    :return:
+    """
 
     im_gt = np.array(Image.open(image_gt_PATH).convert('RGB')).astype(np.float64)
-    im_o = np.array(Image.open(image_o_PATH).convert('RGB')).astype(np.float64)
-    assert im_gt.shape == (128, 128, 3)
-    assert im_o.shape == (128, 128, 3)
-    M = np.ones((128, 128, 3))
-    M[:, 32:96, :] = 0
-    num_pixels = 128 * 64 * 3
-    return np.sqrt(np.sum(((im_gt - im_o) * M) ** 2) / num_pixels)
+    im_i = np.array(Image.open(image_i_PATH).convert('RGB')).astype(np.float64)
+    assert im_gt.shape == (IMAGE_SZ, IMAGE_SZ, 3)
+    assert im_i.shape == (IMAGE_SZ, IMAGE_SZ, 3)
+    assert mask.shape == (IMAGE_SZ, IMAGE_SZ)
+    num_pixels = np.sum(mask)
+    return np.sqrt(np.sum(((im_gt - im_i) * mask[:, :, np.newaxis]) ** 2) / num_pixels)
