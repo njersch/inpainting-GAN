@@ -5,7 +5,6 @@
 # -------------------------------------------------------------
 import numpy as np
 from PIL import Image
-import scipy.misc
 import matplotlib.pyplot as plt
 import cv2
 import os
@@ -163,15 +162,17 @@ def postprocess_images_outpainting(img_PATH, img_i_PATH, out_PATH, mask, blend=F
 
     assert mask.shape == (IMAGE_SZ, IMAGE_SZ)
 
-    src = cv2.imread(img_PATH)
-    dst = cv2.imread(img_i_PATH)
+    src = cv2.imread(img_i_PATH)
+    dst = cv2.imread(img_PATH)
+
     if blend:
-        center = (int(IMAGE_SZ / 2) - 1, int(IMAGE_SZ / 2) - 1)
-        out = cv2.seamlessClone(src, dst, mask*255, center, cv2.NORMAL_CLONE)
+        mask = (mask * 255).astype('uint8')
+        center = int((IMAGE_SZ - 1.0) / 2.0), int((IMAGE_SZ - 1.0) / 2.0)
+        out = cv2.seamlessClone(src, dst, mask, center, cv2.NORMAL_CLONE)
     else:
-        out = dst.copy()
+        out = src.copy()
         inv_mask = np.invert(mask.astype(bool))
-        out[inv_mask, :] = src[inv_mask, :]
+        out[inv_mask, :] = dst[inv_mask, :]
     cv2.imwrite(out_PATH, out)
 
 # Use seamless cloning to improve the generator's output.

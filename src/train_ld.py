@@ -199,4 +199,15 @@ np.savez(os.path.join(OUT_DIR, 'loss.npz'), train_MSE_loss=np.array(train_MSE_lo
 # Save the final blended output, and make a graph of the loss.
 util.plot_loss(os.path.join(OUT_DIR, 'loss.npz'), 'MSE Loss During Training', os.path.join(OUT_DIR, 'loss_plot.png'))
 for i_test in range(N_TEST):
-    util.postprocess_images_outpainting(os.path.join(OUT_DIR, 'test_img_%d.png' % i_test), last_output_PATH[i_test], os.path.join(OUT_DIR, 'out_paste_%d.png' % i_test), blend=False, mask=mask)
+    util.postprocess_images_outpainting(os.path.join(OUT_DIR, 'test_img_%d.png' % i_test),
+                                        last_output_PATH[i_test],
+                                        os.path.join(OUT_DIR, 'out_blend_%d.png' % i_test),
+                                        blend=True,
+                                        mask=mask)
+    util.postprocess_images_outpainting(os.path.join(OUT_DIR, 'test_img_%d.png' % i_test),
+                                        last_output_PATH[i_test],
+                                        os.path.join(OUT_DIR, 'out_paste_%d.png' % i_test),
+                                        blend=False,
+                                        mask=mask)
+
+
