@@ -13,13 +13,13 @@ def generator(z, train_bn=False):  # TODO: batch normalization
 
         # get, invert and broadcast mask to 3 channels
         mask = z[:, :, :, -1]
-        mask = 1 - mask  # implemenation expects 0 for inpainted pixels
+        mask = 1 - mask  # implementation expects 0 for inpainted pixels
         mask = tf.expand_dims(mask, -1)
         mask = tf.concat([mask for _ in range(3)], -1)
 
         # ENCODER
         def encoder_layer(img_in, mask_in, filters, kernel_size, bn=True):
-            conv, mask = PConv2D(filters, kernel_size, padding='same')([img_in, mask_in])
+            conv, mask = PConv2D(filters, kernel_size, strides=2, padding='same')([img_in, mask_in])
             if bn:
                 conv = BatchNormalization(name='EncBN' + str(encoder_layer.counter))(conv, training=train_bn)
             conv = Activation('relu')(conv)
@@ -36,8 +36,10 @@ def generator(z, train_bn=False):  # TODO: batch normalization
 
         # DECODER
         def decoder_layer(img_in, mask_in, e_conv, e_mask, filters, kernel_size, bn=True):
-            concat_img = Concatenate(axis=3)([e_conv, img_in])
-            concat_mask = Concatenate(axis=3)([e_mask, mask_in])
+            up_img = UpSampling2D(size=(2, 2))(img_in)
+            up_mask = UpSampling2D(size=(2, 2))(mask_in)
+            concat_img = Concatenate(axis=3)([e_conv, up_img])
+            concat_mask = Concatenate(axis=3)([e_mask, up_mask])
             conv, mask = PConv2D(filters, kernel_size, padding='same')([concat_img, concat_mask])
             if bn:
                 conv = BatchNormalization()(conv)
