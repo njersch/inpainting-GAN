@@ -28,11 +28,11 @@ OUT_DIR = 'output'
 MODEL_DIR = os.path.join(OUT_DIR, 'models')
 INFO_PATH = os.path.join(OUT_DIR, 'run.txt')
 N_TEST = 15
-N_ITERS = 64000
-N_ITERS_P1 = 20000 # How many iterations to train in phase 1
-N_ITERS_P2 = 4000 # How many iterations to train in phase 2
-INTV_PRINT = 50 # How often to print
-INTV_SAVE = 1000 # How often to save the model
+N_ITERS = 75000
+N_ITERS_P1 = 30000  # How many iterations to train in phase 1
+N_ITERS_P2 = 4000  # How many iterations to train in phase 2
+INTV_PRINT = 50  # How often to print
+INTV_SAVE = 1000  # How often to save the model
 ALPHA = 0.0004
 
 '''
