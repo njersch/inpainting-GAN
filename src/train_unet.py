@@ -20,18 +20,18 @@ from keras import backend as K
 tf.reset_default_graph()
 
 # Places365 Training Hyperparameters
-BATCH_SZ = 4
+BATCH_SZ = 6
 VERBOSE = False
 EPSILON = 1e-9
 IMAGE_SZ = 128
 OUT_DIR = 'output'
 MODEL_DIR = os.path.join(OUT_DIR, 'models')
 INFO_PATH = os.path.join(OUT_DIR, 'run.txt')
-N_TEST = 10
+N_TEST = 15
 N_ITERS = 64000
 N_ITERS_P1 = 20000 # How many iterations to train in phase 1
 N_ITERS_P2 = 4000 # How many iterations to train in phase 2
-INTV_PRINT = 200 # How often to print
+INTV_PRINT = 50 # How often to print
 INTV_SAVE = 1000 # How often to save the model
 ALPHA = 0.0004
 
