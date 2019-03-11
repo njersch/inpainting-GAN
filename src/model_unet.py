@@ -11,8 +11,9 @@ def generator(z, train_bn=False):  # TODO: batch normalization
 
         img = z[:, :, :, :-1]
 
-        # get and broadcast mask to 3 channels
+        # get, invert and broadcast mask to 3 channels
         mask = z[:, :, :, -1]
+        mask = 1 - mask  # implemenation expects 0 for inpainted pixels
         mask = tf.expand_dims(mask, -1)
         mask = tf.concat([mask for _ in range(3)], -1)
 
