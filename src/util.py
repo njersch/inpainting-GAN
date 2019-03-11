@@ -16,7 +16,7 @@ import math
 IMAGE_SZ = 128  # Should be a power of 2
 
 
-def create_mask(rel_diameter=0.5): # TODO: comment
+def create_mask(rel_diameter=0.25):
 
     # determine hole properties
     width, height = IMAGE_SZ, IMAGE_SZ
