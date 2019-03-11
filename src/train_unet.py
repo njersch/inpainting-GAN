@@ -31,7 +31,7 @@ N_TEST = 15
 N_ITERS = 75000
 N_ITERS_P1 = 30000  # How many iterations to train in phase 1
 N_ITERS_P2 = 4000  # How many iterations to train in phase 2
-INTV_PRINT = 50  # How often to print
+INTV_PRINT = 200  # How often to print
 INTV_SAVE = 1000  # How often to save the model
 ALPHA = 0.0004
 
