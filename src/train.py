@@ -1,9 +1,4 @@
-# proj:    image-outpainting
-# file:    train.py
-# authors: Mark Sabini, Gili Rusak
-# desc:    Train the model specified in model.py, which only
-#          uses a global discriminator.
-# -------------------------------------------------------------
+
 import tensorflow as tf
 import numpy as np
 from PIL import Image

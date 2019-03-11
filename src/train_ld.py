@@ -1,9 +1,4 @@
-# proj:    image-outpainting
-# file:    train_ld.py
-# authors: Mark Sabini, Gili Rusak
-# desc:    Train the model specified in model_ld.py, which
-#          uses both global and local discriminators.
-# -------------------------------------------------------------
+
 import tensorflow as tf
 import numpy as np
 from PIL import Image

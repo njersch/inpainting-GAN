@@ -1,9 +1,4 @@
-# proj:    image-outpainting
-# file:    model_ld.py
-# authors: Mark Sabini, Gili Rusak
-# desc:    Model for outpainting on 128x128 images with both
-#          global and local discriminators.
-# -------------------------------------------------------------
+
 import tensorflow as tf
 
 print('Imported model_ld (for Places365, 128x128 images with local discriminator)')

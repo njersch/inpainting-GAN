@@ -1,8 +1,4 @@
-# proj:    image-outpainting
-# file:    util.py
-# authors: Mark Sabini, Gili Rusak
-# desc:    Various utility functions for all sorts of things.
-# -------------------------------------------------------------
+
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt

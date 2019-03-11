@@ -1,9 +1,4 @@
-# proj:    image-outpainting
-# file:    gen.py
-# authors: Mark Sabini, Gili Rusak
-# desc:    Script for generating new images. Pads the image, creates
-#          a mask, feeds it through the network, and postprocesses.
-# -------------------------------------------------------------
+
 import tensorflow as tf
 import numpy as np
 from PIL import Image
