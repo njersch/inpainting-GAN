@@ -12,6 +12,13 @@ import math
 IMAGE_SZ = 128  # Should be a power of 2
 
 
+def load_mask(img):
+
+    mask = np.array(Image.open(img).convert('1'))
+    assert mask.shape == (IMAGE_SZ, IMAGE_SZ)
+    return mask.astype(int)
+
+
 def create_mask(rel_diameter=0.25):
 
     # determine hole properties

@@ -65,7 +65,7 @@ G_Z = tf.placeholder(tf.float32, shape=[None, IMAGE_SZ, IMAGE_SZ, 4], name='G_Z'
 DG_X = tf.placeholder(tf.float32, shape=[None, IMAGE_SZ, IMAGE_SZ, 3], name='DG_X')
 
 # Create mask
-mask = util.create_mask()
+mask = util.load_mask('mask.png')
 
 # Load Places365 data
 data = np.load('places/places_128.npz')
