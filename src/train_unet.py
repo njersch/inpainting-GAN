@@ -14,7 +14,7 @@ from keras import backend as K
 tf.reset_default_graph()
 
 # Places365 Training Hyperparameters
-BATCH_SZ = 6
+BATCH_SZ = 16
 VERBOSE = False
 EPSILON = 1e-9
 IMAGE_SZ = 128
