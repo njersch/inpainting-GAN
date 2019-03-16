@@ -29,7 +29,7 @@ def generator(z, train_bn=False):  # TODO: batch normalization
         encoder_layer.counter = 0
 
         e_conv1, e_mask1 = encoder_layer(img, mask, 64, 5, bn=False)
-        e_conv2, e_mask2 = encoder_layer(e_conv1, e_mask1, 128, 3)
+        e_conv2, e_mask2 = encoder_layer(e_conv1, e_mask1, 128, 5)
         e_conv3, e_mask3 = encoder_layer(e_conv2, e_mask2, 256, 3)
         e_conv4, e_mask4 = encoder_layer(e_conv3, e_mask3, 256, 3)
         e_conv5, e_mask5 = encoder_layer(e_conv4, e_mask4, 256, 3)
@@ -83,7 +83,7 @@ def global_discriminator(x):
 
         conv4 = tf.layers.conv2d(
             inputs=conv3,
-            filters=64,
+            filters=128,
             kernel_size=[5, 5],
             strides=(2, 2),
             padding="same",
@@ -91,7 +91,7 @@ def global_discriminator(x):
 
         conv5 = tf.layers.conv2d(
             inputs=conv4,
-            filters=64,
+            filters=128,
             kernel_size=[5, 5],
             strides=(2, 2),
             padding="same",
@@ -127,7 +127,7 @@ def local_discriminator(x):
 
         conv3 = tf.layers.conv2d(
             inputs=conv2,
-            filters=64,
+            filters=128,
             kernel_size=[5, 5],
             strides=(2, 2),
             padding="same",
@@ -135,7 +135,7 @@ def local_discriminator(x):
 
         conv4 = tf.layers.conv2d(
             inputs=conv3,
-            filters=64,
+            filters=128,
             kernel_size=[5, 5],
             strides=(2, 2),
             padding="same",
