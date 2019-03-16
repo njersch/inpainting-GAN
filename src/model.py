@@ -1,7 +1,7 @@
 
 import tensorflow as tf
 
-print('Imported model (for Places365, 128x128 images)')
+print('Imported model_ld (for Places365, 128x128 images with local discriminator)')
 
 def generator(z):
     with tf.variable_scope('G', reuse=tf.AUTO_REUSE):
@@ -142,10 +142,54 @@ def global_discriminator(x):
 
     return dense6
 
-def concatenator(global_x):
+def local_discriminator(x):
+    with tf.variable_scope('DL', reuse=tf.AUTO_REUSE):
+        conv1 = tf.layers.conv2d(
+            inputs=x,
+            filters=32,
+            kernel_size=[5, 5],
+            strides=(2, 2),
+            padding="same",
+            activation=tf.nn.relu)
+
+        conv2 = tf.layers.conv2d(
+            inputs=conv1,
+            filters=64,
+            kernel_size=[5, 5],
+            strides=(2, 2),
+            padding="same",
+            activation=tf.nn.relu)
+
+        conv3 = tf.layers.conv2d(
+            inputs=conv2,
+            filters=64,
+            kernel_size=[5, 5],
+            strides=(2, 2),
+            padding="same",
+            activation=tf.nn.relu)
+
+        conv4 = tf.layers.conv2d(
+            inputs=conv3,
+            filters=64,
+            kernel_size=[5, 5],
+            strides=(2, 2),
+            padding="same",
+            activation=tf.nn.relu)
+
+        conv4_flat = tf.layers.flatten(
+            inputs=conv4)
+
+        dense5 = tf.layers.dense(
+            inputs=conv4_flat,
+            units=512,
+            activation=tf.nn.relu)
+
+    return dense5
+
+def concatenator(global_x, local_x_left, local_x_right):
     with tf.variable_scope('C', reuse=tf.AUTO_REUSE):
         dense1 = tf.layers.dense(
-            inputs=global_x,
+            inputs=tf.concat([global_x, local_x_left, local_x_right], axis=-1),
             units=1,
             activation=tf.sigmoid)
 
