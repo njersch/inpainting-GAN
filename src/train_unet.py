@@ -27,25 +27,7 @@ N_ITERS_P1 = 20000  # How many iterations to train in phase 1
 N_ITERS_P2 = 6000  # How many iterations to train in phase 2
 INTV_PRINT = 200  # How often to print
 INTV_SAVE = 1000  # How often to save the model
-ALPHA = 0.0004
-
-'''
-# City Training Hyperparameters
-BATCH_SZ = 1
-VERBOSE = False
-EPSILON = 1e-9
-IMAGE_SZ = 128
-OUT_DIR = 'output'
-MODEL_DIR = os.path.join(OUT_DIR, 'models')
-INFO_PATH = os.path.join(OUT_DIR, 'run.txt')
-N_TEST = 1
-N_ITERS = 5000
-N_ITERS_P1 = 1000 # How many iterations to train in phase 1
-N_ITERS_P2 = 400 # How many iterations to train in phase 2
-INTV_PRINT = 50 # How often to print
-INTV_SAVE = 10000 # How often to save the model
-ALPHA = 0.0004
-'''
+ALPHA = 0.0005
 
 # Check that we don't clobber a pre-existing run
 if len(sys.argv) < 2 and os.path.isdir(OUT_DIR) and len(os.listdir(OUT_DIR)) > 2:
