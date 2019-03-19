@@ -40,8 +40,6 @@ with tf.Session() as sess:
     for i in range(m):
 
         index = indices[i]
-        if index not in [11, 146, 407, 761, 943, 2203, 2989, 3019, 3124, 3222, 3762, 3800, 4611, 5106]:
-            continue
 
         output, = sess.run([G_sample], feed_dict={G_Z: imgs_p[i][np.newaxis]})
 
