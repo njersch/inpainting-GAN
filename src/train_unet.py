@@ -21,7 +21,7 @@ IMAGE_SZ = 128
 OUT_DIR = 'output'
 MODEL_DIR = os.path.join(OUT_DIR, 'models')
 INFO_PATH = os.path.join(OUT_DIR, 'run.txt')
-N_TEST = 15
+N_TEST = 2
 N_ITERS = 125000
 N_ITERS_P1 = 25000  # How many iterations to train in phase 1
 N_ITERS_P2 = 6000  # How many iterations to train in phase 2
@@ -76,8 +76,8 @@ vars_G = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='G')
 # Determine weight for local discriminator
 alpha_ld = 1 if USE_LD else 0
 
-C_real = model.concatenator(model.global_discriminator(DG_X), alpha_ld*model.local_discriminator(DG_X[:, :, :IMAGE_SZ // 2, :]), alpha_ld*model.local_discriminator(tf.reverse(DG_X[:, :, -IMAGE_SZ // 2:, :], axis=[2])))
-C_fake = model.concatenator(model.global_discriminator(G_sample), alpha_ld*model.local_discriminator(G_sample[:, :, :IMAGE_SZ // 2, :]), alpha_ld*model.local_discriminator(tf.reverse(G_sample[:, :, -IMAGE_SZ // 2:, :], axis=[2])))
+C_real = model.concatenator(model.global_discriminator(DG_X), alpha_ld*model.local_discriminator(DG_X[:, :, :IMAGE_SZ // 3, :]), alpha_ld*model.local_discriminator(tf.reverse(DG_X[:, :, -IMAGE_SZ // 2:, :], axis=[2])))
+C_fake = model.concatenator(model.global_discriminator(G_sample), alpha_ld*model.local_discriminator(G_sample[:, :, :IMAGE_SZ // 3, :]), alpha_ld*model.local_discriminator(tf.reverse(G_sample[:, :, -IMAGE_SZ // 2:, :], axis=[2])))
 vars_DG = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='DG')
 vars_DL = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='DL')
 vars_C = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='C')

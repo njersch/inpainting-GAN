@@ -1,11 +1,15 @@
 
-import tensorflow as tf
-import numpy as np
-from PIL import Image
-import model
-import util
 import os
 import sys
+
+import numpy as np
+import tensorflow as tf
+
+import model
+import util
+
+from keras import backend as K
+
 
 tf.reset_default_graph()
 
@@ -17,31 +21,14 @@ IMAGE_SZ = 128
 OUT_DIR = 'output'
 MODEL_DIR = os.path.join(OUT_DIR, 'models')
 INFO_PATH = os.path.join(OUT_DIR, 'run.txt')
-N_TEST = 10
-N_ITERS = 227500
-N_ITERS_P1 = 40950 # How many iterations to train in phase 1
-N_ITERS_P2 = 4550 # How many iterations to train in phase 2
-INTV_PRINT = 200 # How often to print
-INTV_SAVE = 1000 # How often to save the model
-ALPHA = 0.0004
-
-'''
-# City Training Hyperparameters
-BATCH_SZ = 1
-VERBOSE = False
-EPSILON = 1e-9
-IMAGE_SZ = 128
-OUT_DIR = 'output'
-MODEL_DIR = os.path.join(OUT_DIR, 'models')
-INFO_PATH = os.path.join(OUT_DIR, 'run.txt')
-N_TEST = 1
-N_ITERS = 5000
-N_ITERS_P1 = 1000 # How many iterations to train in phase 1
-N_ITERS_P2 = 400 # How many iterations to train in phase 2
-INTV_PRINT = 50 # How often to print
-INTV_SAVE = 10000 # How often to save the model
-ALPHA = 0.0004
-'''
+N_TEST = 2
+N_ITERS = 125000
+N_ITERS_P1 = 25000  # How many iterations to train in phase 1
+N_ITERS_P2 = 6000  # How many iterations to train in phase 2
+INTV_PRINT = 200  # How often to print
+INTV_SAVE = 1000  # How often to save the model
+ALPHA = 0.0005
+USE_LD = True  # Whether to use the local discriminator
 
 # Check that we don't clobber a pre-existing run
 if len(sys.argv) < 2 and os.path.isdir(OUT_DIR) and len(os.listdir(OUT_DIR)) > 2:
@@ -56,11 +43,12 @@ if len(sys.argv) >= 2:
     model_filename = os.path.join(MODEL_DIR, 'model%d.ckpt' % start_iter)
 
 # Generator code
+K.set_learning_phase(1)  # to accommodate Keras layers
 G_Z = tf.placeholder(tf.float32, shape=[None, IMAGE_SZ, IMAGE_SZ, 4], name='G_Z')
 DG_X = tf.placeholder(tf.float32, shape=[None, IMAGE_SZ, IMAGE_SZ, 3], name='DG_X')
 
 # Create mask
-mask = util.create_mask()
+mask = util.load_mask('mask.png')
 
 # Load Places365 data
 data = np.load('places/places_128.npz')
@@ -76,20 +64,6 @@ test_img_p = test_imgs_p[:N_TEST]
 train_img = imgs[4, np.newaxis]
 train_img_p = imgs_p[4, np.newaxis]
 
-'''
-# Load city image data
-imgs = util.load_city_image()
-imgs_p = util.preprocess_images_outpainting(imgs)
-
-test_imgs = util.load_city_image()
-test_imgs_p = util.preprocess_images_outpainting(test_imgs)
-
-test_img = test_imgs
-test_img_p = test_imgs_p
-
-train_img = imgs
-train_img_p = imgs_p
-'''
 
 # Write training and testing sample ground truths as reference
 util.save_image(train_img[0], os.path.join(OUT_DIR, 'train_img.png'))
@@ -99,16 +73,22 @@ for i_test in range(N_TEST):
 G_sample = model.generator(G_Z)
 vars_G = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='G')
 
-C_real = model.concatenator(model.global_discriminator(DG_X))
-C_fake = model.concatenator(model.global_discriminator(G_sample))
+# Determine weight for local discriminator
+alpha_ld = 1 if USE_LD else 0
+
+C_real = model.concatenator(model.global_discriminator(DG_X), alpha_ld*model.local_discriminator(DG_X[:, :, :IMAGE_SZ // 3, :]), alpha_ld*model.local_discriminator(tf.reverse(DG_X[:, :, -IMAGE_SZ // 2:, :], axis=[2])))
+C_fake = model.concatenator(model.global_discriminator(G_sample), alpha_ld*model.local_discriminator(G_sample[:, :, :IMAGE_SZ // 3, :]), alpha_ld*model.local_discriminator(tf.reverse(G_sample[:, :, -IMAGE_SZ // 2:, :], axis=[2])))
 vars_DG = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='DG')
+vars_DL = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='DL')
 vars_C = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='C')
 
 C_loss = -tf.reduce_mean(tf.log(tf.maximum(C_real, EPSILON)) + tf.log(tf.maximum(1. - C_fake, EPSILON)))
-G_MSE_loss = tf.losses.mean_squared_error(G_sample, DG_X, weights=tf.expand_dims(G_Z[:,:,:,3], -1)) # TODO: MULTIPLY with mask. Actually see if we want to remove this.
+G_MSE_loss_hole = tf.losses.mean_squared_error(G_sample, DG_X, weights=tf.expand_dims(G_Z[:,:,:,3], -1))
+G_MSE_loss_valid = tf.losses.mean_squared_error(G_sample, DG_X, weights=tf.expand_dims(1-G_Z[:,:,:,3], -1))
+G_MSE_loss = G_MSE_loss_hole + 1/6 * G_MSE_loss_valid
 G_loss = G_MSE_loss - ALPHA * tf.reduce_mean(tf.log(tf.maximum(C_fake, EPSILON)))
 
-C_solver = tf.train.AdamOptimizer().minimize(C_loss, var_list=(vars_DG + vars_C))
+C_solver = tf.train.AdamOptimizer().minimize(C_loss, var_list=(vars_DG + vars_DL + vars_C))
 G_solver = tf.train.AdamOptimizer().minimize(G_loss, var_list=vars_G)
 G_MSE_solver = tf.train.AdamOptimizer().minimize(G_MSE_loss, var_list=vars_G)
 
@@ -123,6 +103,9 @@ assert N_ITERS > N_ITERS_P1 + N_ITERS_P2
 saver = tf.train.Saver()
 
 with tf.Session() as sess:
+
+    K.set_session(sess)
+
     if model_filename is None:
         sess.run(tf.global_variables_initializer())
     else:
@@ -180,7 +163,7 @@ with tf.Session() as sess:
             dev_MSE_loss.append([i, G_MSE_loss_curr_dev])
 
         # Save the model every so often
-        if i % INTV_SAVE == 0:
+        if i % INTV_SAVE == 0 and i > 0:
             save_path = saver.save(sess, os.path.join(MODEL_DIR, 'model%d.ckpt' % i))
             print('Model saved in path: %s' % save_path)
 
@@ -203,3 +186,5 @@ for i_test in range(N_TEST):
                                         os.path.join(OUT_DIR, 'out_paste_%d.png' % i_test),
                                         blend=False,
                                         mask=mask)
+
+
