@@ -116,17 +116,17 @@ with tf.Session() as sess:
         C_loss_curr, G_loss_curr, G_MSE_loss_curr = None, None, None
         if i < N_ITERS_P1: # Stage 1 - Train Generator Only
             if i == 0:
-                print('------------------> Beginning Phase 1...')
+                print('------> Beginning Phase 1 (generator on MSE only) ...')
             _, G_MSE_loss_curr, G_sample_ = sess.run([G_MSE_solver, G_MSE_loss, G_sample], feed_dict={DG_X: batch, G_Z: batch_p})
         elif i < N_ITERS_P1 + N_ITERS_P2: # Stage 2 - Train Discriminator Only
             if i == N_ITERS_P1:
-                print('------------------> Beginning Phase 2...')
+                print('------> Beginning Phase 2 (discriminator only) ...')
             _, C_loss_curr, C_real_, C_fake_ = sess.run([C_solver, C_loss, C_real, C_fake], feed_dict={DG_X: batch, G_Z: batch_p})
             if VERBOSE:
                 print((i, C_loss_curr, np.min(C_real_), np.max(C_real_), np.min(C_fake_), np.max(C_fake_)))
         else: # Stage 3 - Train both Generator and Discriminator
             if i == N_ITERS_P1 + N_ITERS_P2:
-                print('------------------> Beginning Phase 3...')
+                print('------> Beginning Phase 3 (discriminator and generator) ...')
             _, C_loss_curr, C_real_, C_fake_ = sess.run([C_solver, C_loss, C_real, C_fake], feed_dict={DG_X: batch, G_Z: batch_p})
             if VERBOSE:
                 print((i, C_loss_curr, 'D', np.min(C_real_), np.max(C_real_), np.min(C_fake_), np.max(C_fake_)))
