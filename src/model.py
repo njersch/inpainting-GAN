@@ -4,7 +4,7 @@
 
 import tensorflow as tf
 
-print('Imported model_ld (for Places365, 128x128 images with local discriminator)')
+print('Imported model (for Places365, 128x128 images without partial convolutions)')
 
 def generator(z):
     with tf.variable_scope('G', reuse=tf.AUTO_REUSE):

@@ -7,6 +7,7 @@ from keras.layers.merge import Concatenate
 
 from pconv_layer import PConv2D
 
+print('Imported model (for Places365, 128x128 images with partial convolutions)')
 
 def generator(z, train_bn=False):
 
