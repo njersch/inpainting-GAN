@@ -1,3 +1,6 @@
+# desc:    Script to feed all test images through a given model
+#          and save the output
+# -------------------------------------------------------------
 
 import numpy as np
 import tensorflow as tf
@@ -17,6 +20,7 @@ IMAGE_SZ = 128
 
 mask = util.load_mask('mask.png')
 
+# load images from test split saved in 'places/places_128.npz'
 files = np.load('places/places_128.npz')
 imgs = files['imgs_test']
 indices = files['idx_test']

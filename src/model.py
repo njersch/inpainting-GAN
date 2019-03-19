@@ -1,3 +1,6 @@
+# desc:    Encoder-decoder CNN model to inpaint
+#          128x128x3 images
+# -------------------------------------------------------------
 
 import tensorflow as tf
 

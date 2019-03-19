@@ -1,4 +1,6 @@
-
+# desc:    Script to feed a given image through a given model
+#          and save the output
+# -------------------------------------------------------------
 import tensorflow as tf
 from keras import backend as K
 import numpy as np

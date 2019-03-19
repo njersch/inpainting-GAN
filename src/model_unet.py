@@ -1,3 +1,6 @@
+# desc:    U-Net model with partial convolutions to inpaint
+#          128x128x3 images
+# -------------------------------------------------------------
 import tensorflow as tf
 from keras.layers import Conv2D, UpSampling2D, LeakyReLU, BatchNormalization, Activation
 from keras.layers.merge import Concatenate
