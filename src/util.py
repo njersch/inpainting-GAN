@@ -87,22 +87,6 @@ def preprocess_images_outpainting(imgs, mask, fill=True):
 
     return imgs_p
 
-# Expands and preprocesses a single (h, w, 3) image for image outpainting.
-# Returns: numpy array of size (h, w + 2 * dw, 4)
-def preprocess_images_gen(img):
-
-    raise Exception('NJ: Method needs to be rewritten!')
-
-    img = np.array(img, copy=True)
-    pix_avg = np.mean(img)
-    dw = int(2 * IMAGE_SZ / 8) # Amount that will be outpainted on each side
-    img_expand = np.ones((img.shape[0], img.shape[1] + 2 * dw, img.shape[2])) * pix_avg
-    img_expand[:, dw:-dw, :] = img
-    mask = np.zeros((img_expand.shape[0], img_expand.shape[1], 1))
-    mask[:, :int(2 * IMAGE_SZ / 8), :] = mask[:, int(-2 * IMAGE_SZ / 8):, :] = 1.0
-    img_p = np.concatenate((img_expand, mask), axis=2)
-    return img_p[np.newaxis]
-
 # Renormalizes an image to [0, 255].
 def norm_image(img_r):
     img_norm = (img_r * 255.0).astype(np.uint8)
@@ -161,7 +145,7 @@ def plot_loss2(loss_filename, title, out_filename):
     plt.clf()
 
 # Use seamless cloning to improve the generator's output.
-def postprocess_images_outpainting(img_PATH, img_i_PATH, out_PATH, mask, blend=False): # img, img_0 are (64, 64, 3), mask is (64, 64, 1)
+def postprocess_images_outpainting(img_PATH, img_i_PATH, out_PATH, mask, blend=False):
 
     assert mask.shape == (IMAGE_SZ, IMAGE_SZ)
 
@@ -177,23 +161,6 @@ def postprocess_images_outpainting(img_PATH, img_i_PATH, out_PATH, mask, blend=F
         inv_mask = np.invert(mask.astype(bool))
         out[inv_mask, :] = dst[inv_mask, :]
     cv2.imwrite(out_PATH, out)
-
-# Use seamless cloning to improve the generator's output.
-def postprocess_images_gen(img, img_o, blend=False):
-
-    raise Exception('NJ: Method needs to be rewritten!')
-
-    src = img[:, :, ::-1].copy()
-    dst = img_o[:, :, ::-1].copy()
-
-    if blend:
-        mask = np.ones(src.shape, src.dtype) * 255
-        center = (int(dst.shape[1] / 2) - 1, int(dst.shape[0] / 2) - 1)
-        out = cv2.seamlessClone(src, dst, mask, center, cv2.NORMAL_CLONE)
-    else:
-        out = dst.copy()
-        out[:, int(2 * IMAGE_SZ / 8):-int(2 * IMAGE_SZ / 8), :] = src
-    return out[:, :, ::-1].copy()
 
 # Crop and resize all the images in a directory.
 def resize_images(src_PATH, dst_PATH):
