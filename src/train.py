@@ -27,7 +27,7 @@ N_ITERS_P1 = 25000  # How many iterations to train in phase 1
 N_ITERS_P2 = 6000  # How many iterations to train in phase 2
 INTV_PRINT = 200  # How often to print
 INTV_SAVE = 1000  # How often to save the model
-ALPHA = 0.0005
+ALPHA = 0.0005  # Weight of adversarial loss
 USE_LD = True  # Whether to use the local discriminator
 
 # Check that we don't clobber a pre-existing run

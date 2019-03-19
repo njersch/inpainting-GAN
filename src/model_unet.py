@@ -5,7 +5,7 @@ from keras.layers.merge import Concatenate
 from pconv_layer import PConv2D
 
 
-def generator(z, train_bn=False):  # TODO: batch normalization
+def generator(z, train_bn=False):
 
     with tf.variable_scope('G', reuse=tf.AUTO_REUSE):
 
@@ -20,10 +20,14 @@ def generator(z, train_bn=False):  # TODO: batch normalization
         # ENCODER
         def encoder_layer(img_in, mask_in, filters, kernel_size, bn=True):
             conv, mask = PConv2D(filters, kernel_size, strides=2, padding='same')([img_in, mask_in])
+
+            # add batch normalization if desired
             if bn:
                 conv = BatchNormalization(name='EncBN' + str(encoder_layer.counter))(conv, training=train_bn)
             conv = Activation('relu')(conv)
+
             encoder_layer.counter += 1
+
             return conv, mask
 
         encoder_layer.counter = 0
@@ -36,14 +40,20 @@ def generator(z, train_bn=False):  # TODO: batch normalization
 
         # DECODER
         def decoder_layer(img_in, mask_in, e_conv, e_mask, filters, kernel_size, bn=True):
+
+            # up-sample and concatenate
             up_img = UpSampling2D(size=(2, 2))(img_in)
             up_mask = UpSampling2D(size=(2, 2))(mask_in)
             concat_img = Concatenate(axis=3)([e_conv, up_img])
             concat_mask = Concatenate(axis=3)([e_mask, up_mask])
+
             conv, mask = PConv2D(filters, kernel_size, padding='same')([concat_img, concat_mask])
+
+            # add batch normalization if desired
             if bn:
                 conv = BatchNormalization()(conv)
             conv = LeakyReLU(alpha=0.2)(conv)
+
             return conv, mask
 
         d_conv6, d_mask6 = decoder_layer(e_conv5, e_mask5, e_conv4, e_mask4, 256, 3)
