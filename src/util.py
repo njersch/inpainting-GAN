@@ -68,9 +68,9 @@ def compile_images(in_PATH, out_PATH):
     imgs = load_images(in_PATH, verbose=True)
     np.save(out_PATH, imgs)
 
-# Masks and preprocesses an (m, IMAGE_SZ, IMAGE_SZ, 3) batch of images for image outpainting.
+# Masks and preprocesses an (m, IMAGE_SZ, IMAGE_SZ, 3) batch of images for image inpainting.
 # Returns: numpy array of size (m, IMAGE_SZ, IMAGE_SZ, 4)
-def preprocess_images_outpainting(imgs, mask, fill=True):
+def preprocess_images_inpainting(imgs, mask, fill=True):
 
     assert mask.shape == (IMAGE_SZ, IMAGE_SZ)
 
@@ -145,7 +145,7 @@ def plot_loss2(loss_filename, title, out_filename):
     plt.clf()
 
 # Use seamless cloning to improve the generator's output.
-def postprocess_images_outpainting(img_PATH, img_i_PATH, out_PATH, mask, blend=False):
+def postprocess_images_inpainting(img_PATH, img_i_PATH, out_PATH, mask, blend=False):
 
     assert mask.shape == (IMAGE_SZ, IMAGE_SZ)
 

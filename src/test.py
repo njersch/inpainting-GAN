@@ -25,7 +25,7 @@ if img.shape != (IMAGE_SZ, IMAGE_SZ, 3):
     exit()
 
 img = img[np.newaxis] / 255.0
-img_p = util.preprocess_images_outpainting(img, mask=mask)
+img_p = util.preprocess_images_inpainting(img, mask=mask)
 
 tf.reset_default_graph()
 K.set_learning_phase(1)
@@ -49,6 +49,6 @@ with tf.Session() as sess:
     util.save_image(img_out, out_path)
 
     # save pasted and blended versions
-    util.postprocess_images_outpainting(in_PATH, out_path, os.path.join(out_DIR, f'{name}_paste.png'), blend=False, mask=mask)
-    util.postprocess_images_outpainting(in_PATH, out_path, os.path.join(out_DIR, f'{name}_blend.png'), blend=True, mask=mask)
+    util.postprocess_images_inpainting(in_PATH, out_path, os.path.join(out_DIR, f'{name}_paste.png'), blend=False, mask=mask)
+    util.postprocess_images_inpainting(in_PATH, out_path, os.path.join(out_DIR, f'{name}_blend.png'), blend=True, mask=mask)
 

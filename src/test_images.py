@@ -34,7 +34,7 @@ with tf.Session() as sess:
     K.set_session(sess)
     saver.restore(sess, model_PATH)
 
-    imgs_p = util.preprocess_images_outpainting(imgs, mask=mask)
+    imgs_p = util.preprocess_images_inpainting(imgs, mask=mask)
     m = imgs_p.shape[0]
 
     for i in range(m):
@@ -54,10 +54,10 @@ with tf.Session() as sess:
         util.save_image(img_in, img_in_path)
 
         # save pasted and blended versions
-        util.postprocess_images_outpainting(img_in_path, img_out_path, os.path.join(out_DIR, f'{name}_paste.png'), blend=False,
-                                            mask=mask)
-        util.postprocess_images_outpainting(img_in_path, img_out_path, os.path.join(out_DIR, f'{name}_blend.png'), blend=True,
-                                            mask=mask)
+        util.postprocess_images_inpainting(img_in_path, img_out_path, os.path.join(out_DIR, f'{name}_paste.png'), blend=False,
+                                           mask=mask)
+        util.postprocess_images_inpainting(img_in_path, img_out_path, os.path.join(out_DIR, f'{name}_blend.png'), blend=True,
+                                           mask=mask)
 
         print(f'Saved images {name}')
 
