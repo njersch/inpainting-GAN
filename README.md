@@ -6,5 +6,3 @@ The project is to build an agent who can repaint missing parts of pictures. Plea
 
 # Method
 The method we propose is comnbination of a Generative Adversarial Network (GAN) and partial convlution that was developed by NVIDIA (as seen here: https://github.com/NVIDIA/partialconv).
-
-# Code and Setup
